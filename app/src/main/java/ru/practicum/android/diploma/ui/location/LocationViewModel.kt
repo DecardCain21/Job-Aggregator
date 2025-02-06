@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.domain.state.LocationState
 import ru.practicum.android.diploma.domain.usecase.filters.location.ClearLocationUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.location.GetLocationUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.location.SetLocationUseCase
@@ -20,6 +19,7 @@ class LocationViewModel(
     private val getTmpFiltersUseCase: GetTmpFiltersUseCase,
     private val setTmpFilterUseCase: SetTmpFiltersUseCase,
 ) : ViewModel() {
+
     init {
         val initLocationState =
             getTmpFiltersUseCase.execute().location
@@ -44,7 +44,6 @@ class LocationViewModel(
         } else {
             LocationState.Data(location)
         }
-
         _state.value = state
     }
 

@@ -8,5 +8,4 @@ class SetLocationUseCase(
 ) {
 
     fun execute(location: Location) = repository.setLocation(location)
-
 }

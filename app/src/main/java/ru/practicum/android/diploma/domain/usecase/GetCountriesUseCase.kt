@@ -10,9 +10,6 @@ class GetCountriesUseCase(
 ) {
 
     suspend fun execute() = withContext(Dispatchers.IO) {
-        when (val result = repository.getCountry()) {
-            is Resource.Success -> Pair(result.data, null)
-            is Resource.Error -> Pair(null, result.message)
-        }
+        repository.getCountry()
     }
 }

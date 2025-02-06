@@ -5,5 +5,5 @@ import ru.practicum.android.diploma.util.Resource
 
 interface IndustryRepository {
 
-    suspend fun getIndustries(): Resource<List<Industry>>
+    suspend fun getIndustries(): Result<List<Industry>>
 }

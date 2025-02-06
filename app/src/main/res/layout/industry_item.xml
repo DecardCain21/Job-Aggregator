@@ -9,7 +9,7 @@
         android:buttonTint="@color/blue"
         android:ellipsize="end"
         android:layoutDirection="rtl"
-        android:maxLines="2"
+        android:maxLines="@integer/max_lines_two"
         android:minHeight="@dimen/mark_60dp"
         android:textAlignment="textStart"
         android:textColor="?attr/black_to_white"

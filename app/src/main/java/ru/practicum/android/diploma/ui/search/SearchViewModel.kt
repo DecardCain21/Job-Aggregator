@@ -5,13 +5,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.common.AppConstants.EMPTY_PARAM_VALUE
-import ru.practicum.android.diploma.common.AppConstants.SEARCH_DEBOUNCE_DELAY
-import ru.practicum.android.diploma.data.network.RetrofitNetworkClient.Companion.FAILED_INTERNET_CONNECTION_CODE
+import ru.practicum.android.diploma.data.network.NetworkError
 import ru.practicum.android.diploma.domain.models.Filter
-import ru.practicum.android.diploma.domain.state.VacancyState
-import ru.practicum.android.diploma.domain.state.VacancyState.Input
-import ru.practicum.android.diploma.domain.state.VacancyState.VacanciesList
+import ru.practicum.android.diploma.ui.search.SearchState.Input
+import ru.practicum.android.diploma.ui.search.SearchState.VacanciesList
 import ru.practicum.android.diploma.domain.usecase.filters.search.GetSearchFiltersUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.search.SetSearchFiltersUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.tmp.GetTmpFiltersUseCase
@@ -25,7 +22,7 @@ class SearchViewModel(
     private val setSearchFiltersUseCase: SetSearchFiltersUseCase
 ) : ViewModel() {
 
-    private var lastExpression = EMPTY_PARAM_VALUE
+    private var lastExpression = ""
     private var currentPage = 1
     private var maxPage = 0
 
@@ -35,14 +32,14 @@ class SearchViewModel(
     private var isNextPageLoading = false
     private var lastFilter: Filter? = null
 
-    private val _state: MutableStateFlow<VacancyState> = MutableStateFlow(
-        VacancyState(Input.Empty, VacanciesList.Start)
+    private val _state: MutableStateFlow<SearchState> = MutableStateFlow(
+        SearchState(Input.Empty, VacanciesList.Start)
     )
-    val state: StateFlow<VacancyState>
+    val state: StateFlow<SearchState>
         get() = _state
 
     private val searchDebounceAction = debounce<String>(
-        delayMillis = SEARCH_DEBOUNCE_DELAY,
+        delayMillis = 2_000L,
         coroutineScope = viewModelScope,
         useLastParam = true
     ) { changedText ->
@@ -59,18 +56,18 @@ class SearchViewModel(
     fun isFilterApplied() = getFilter() != Filter.empty
 
     fun clearSearch() {
-        lastExpression = EMPTY_PARAM_VALUE
-        _state.value = VacancyState(Input.Empty, VacanciesList.Start)
+        lastExpression = ""
+        _state.value = SearchState(Input.Empty, VacanciesList.Start)
     }
 
     private fun search(expression: String) {
         lastExpression = expression
-        _state.value = VacancyState(
+        _state.value = SearchState(
             input = Input.Text(lastExpression),
             vacanciesList = VacanciesList.Empty,
         )
         setSearchFiltersUseCase.execute(getTmpFiltersUseCase.execute())
-        _state.value = VacancyState(Input.Text(expression), VacanciesList.Loading)
+        _state.value = SearchState(Input.Text(expression), VacanciesList.Loading)
         requestToServer(expression)
     }
 
@@ -83,28 +80,32 @@ class SearchViewModel(
             page = currentPage,
             filter = filter
         )
+        val searchState: SearchState = when (result.exceptionOrNull()) {
+            is NetworkError.BadCode, is NetworkError.ServerError ->
+                state.value.copy(vacanciesList = VacanciesList.Error)
 
-        val resultData = result.first?.items
-        val totalVacancyCount = result.first?.found ?: 0
-        val vacancyState: VacancyState = when {
-            resultData == null -> {
-                if (result.second == FAILED_INTERNET_CONNECTION_CODE.toString()) {
-                    state.value.copy(vacanciesList = VacanciesList.NoInternet)
-                } else {
-                    state.value.copy(vacanciesList = VacanciesList.Error)
-                }
-            }
+            is NetworkError.NoData ->
+                state.value.copy(vacanciesList = VacanciesList.Empty)
 
-            resultData.isEmpty() -> state.value.copy(vacanciesList = VacanciesList.Empty)
+            is NetworkError.NoInternet ->
+                state.value.copy(vacanciesList = VacanciesList.NoInternet)
 
             else -> {
                 isNextPageLoading = false
                 currentPage += 1
-                result.first?.let { maxPage = it.pages }
-                state.value.copy(vacanciesList = VacanciesList.Data(resultData, totalVacancyCount))
+
+                val data = result.getOrNull()
+                maxPage = data?.pages ?: 0
+
+                state.value.copy(
+                    vacanciesList = VacanciesList.Data(
+                        data?.items.orEmpty(),
+                        data?.totalVacancyCount ?: 0
+                    )
+                )
             }
         }
-        _state.value = vacancyState
+        _state.value = searchState
     }
 
     fun searchDebounce(expression: String) {
@@ -119,7 +120,6 @@ class SearchViewModel(
     private fun compareTmpAndSearchFilters(): Boolean {
         val tmpFilters = lastFilter
         val searchFilters = getSearchFiltersUseCase.execute()
-//        Log.d("TST", "$tmpFilters $searchFilters")
         return tmpFilters == searchFilters
     }
 }

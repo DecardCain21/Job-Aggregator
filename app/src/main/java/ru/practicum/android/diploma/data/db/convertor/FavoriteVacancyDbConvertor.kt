@@ -3,6 +3,7 @@ package ru.practicum.android.diploma.data.db.convertor
 import ru.practicum.android.diploma.data.db.entity.FavoriteVacancyEntity
 import ru.practicum.android.diploma.domain.models.Vacancy
 import ru.practicum.android.diploma.domain.models.VacancyDetails
+import ru.practicum.android.diploma.util.SalaryFormatter
 
 class FavoriteVacancyDbConvertor {
 
@@ -14,7 +15,7 @@ class FavoriteVacancyDbConvertor {
         imageUrl = model.imageUrl,
         salaryFrom = model.salaryFrom,
         salaryTo = model.salaryTo,
-        currency = model.currency,
+        currency = model.currency.currencyName,
         employmentName = model.employerName,
         experience = model.experience,
         schedule = model.schedule,
@@ -33,7 +34,7 @@ class FavoriteVacancyDbConvertor {
         imageUrl = entity.imageUrl,
         salaryFrom = entity.salaryFrom,
         salaryTo = entity.salaryTo,
-        currency = entity.currency,
+        currency = SalaryFormatter.fromCurrencyName(entity.currency),
         employmentName = entity.employmentName,
         experience = entity.experience,
         employerName = entity.employerName,
@@ -51,7 +52,7 @@ class FavoriteVacancyDbConvertor {
         city = entity.area,
         salaryFrom = entity.salaryFrom,
         salaryTo = entity.salaryTo,
-        currency = entity.currency,
+        currency = SalaryFormatter.fromCurrencyName(entity.currency),
         employerName = entity.employerName,
         experience = entity.experience,
         employmentName = entity.employmentName,

@@ -6,14 +6,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.common.AppConstants.SEARCH_DEBOUNCE_DELAY
-import ru.practicum.android.diploma.data.network.RetrofitNetworkClient.Companion.FAILED_INTERNET_CONNECTION_CODE
+import ru.practicum.android.diploma.data.network.NetworkError
 import ru.practicum.android.diploma.domain.models.Country
 import ru.practicum.android.diploma.domain.models.Location
 import ru.practicum.android.diploma.domain.models.Region
-import ru.practicum.android.diploma.domain.state.RegionState
-import ru.practicum.android.diploma.domain.state.RegionState.Data
-import ru.practicum.android.diploma.domain.state.RegionState.Input
+import ru.practicum.android.diploma.ui.region.RegionState.Data
+import ru.practicum.android.diploma.ui.region.RegionState.Input
 import ru.practicum.android.diploma.domain.usecase.GetCountriesUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.location.GetLocationUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.location.SetLocationUseCase
@@ -34,21 +32,14 @@ class RegionViewModel(
         get() = _state
 
     fun getRegions(sortExpression: String = "") = viewModelScope.launch(Dispatchers.Main) {
-        val response = getCountriesUseCase.execute()
-        countries = response.first ?: emptyList()
-
-        val dataState = when {
-            response.first?.isEmpty() == true -> Data.Empty
-            response.second?.isNotEmpty() == true -> {
-                if (response.second == FAILED_INTERNET_CONNECTION_CODE.toString()) {
-                    Data.NoInternet
-                } else {
-                    Data.Error
-                }
-            }
-
+        val result = getCountriesUseCase.execute()
+        countries = result.getOrDefault(emptyList())
+        val dataState: Data = when (result.exceptionOrNull()) {
+            is NetworkError.BadCode, is NetworkError.ServerError -> Data.Error
+            is NetworkError.NoData -> Data.Empty
+            is NetworkError.NoInternet -> Data.NoInternet
             else -> {
-                val sortedRegions = sortRegionsIfNeeded(parseRegions(response.first!!), sortExpression)
+                val sortedRegions = sortRegionsIfNeeded(parseRegions(result.getOrDefault(emptyList())), sortExpression)
                 if (sortedRegions.isEmpty()) Data.Empty else Data.Data(sortedRegions)
             }
         }
@@ -56,7 +47,7 @@ class RegionViewModel(
     }
 
     private val searchDebounceAction = debounce<String>(
-        delayMillis = SEARCH_DEBOUNCE_DELAY,
+        delayMillis = 2_000L,
         coroutineScope = viewModelScope,
         useLastParam = true
     ) { changedText ->
@@ -87,8 +78,7 @@ class RegionViewModel(
 
     fun setRegion(region: Region) {
         val country = findCountryByRegion(region)
-        val location = Location(country, region)
-        setLocationUseCase.execute(location)
+        setLocationUseCase.execute(Location(country, region))
     }
 
     private fun parseRegions(countries: List<Country>): List<Region> {

@@ -4,8 +4,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:foreground="?attr/selectableItemBackground"
-    android:padding="@dimen/mark_16dp">
+    android:paddingVertical="@dimen/mark_16dp">
 
     <TextView
         android:id="@+id/tv_country"

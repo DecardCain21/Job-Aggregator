@@ -8,10 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.domain.models.Filter
 import ru.practicum.android.diploma.domain.models.Location
-import ru.practicum.android.diploma.domain.state.FiltersState
-import ru.practicum.android.diploma.domain.state.FiltersState.Data.Payload
-import ru.practicum.android.diploma.domain.state.FiltersState.Editor.Changed
-import ru.practicum.android.diploma.domain.state.FiltersState.Editor.Unchanged
+import ru.practicum.android.diploma.ui.filters.FiltersState.Data.Payload
+import ru.practicum.android.diploma.ui.filters.FiltersState.Editor.Changed
+import ru.practicum.android.diploma.ui.filters.FiltersState.Editor.Unchanged
 import ru.practicum.android.diploma.domain.usecase.filters.search.ClearSearchFiltersUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.search.GetSearchFiltersUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.search.SetSearchFiltersUseCase

@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentLocationBinding
-import ru.practicum.android.diploma.domain.state.LocationState
 import ru.practicum.android.diploma.util.BindingFragment
 import ru.practicum.android.diploma.util.invisible
 import ru.practicum.android.diploma.util.visible
@@ -108,6 +107,7 @@ class LocationFragment : BindingFragment<FragmentLocationBinding>() {
                 renderField(view = tiCountry, text = "")
                 renderField(view = tiRegion, text = "")
             }
+
         }
     }
 

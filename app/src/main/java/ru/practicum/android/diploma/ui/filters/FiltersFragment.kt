@@ -15,12 +15,10 @@ import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
-import ru.practicum.android.diploma.common.AppConstants.EMPTY_PARAM_VALUE
 import ru.practicum.android.diploma.databinding.FragmentFilterBinding
 import ru.practicum.android.diploma.domain.models.Filter
-import ru.practicum.android.diploma.domain.state.FiltersState
-import ru.practicum.android.diploma.domain.state.FiltersState.Data.Payload
-import ru.practicum.android.diploma.domain.state.FiltersState.Editor.Changed
+import ru.practicum.android.diploma.ui.filters.FiltersState.Data.Payload
+import ru.practicum.android.diploma.ui.filters.FiltersState.Editor.Changed
 import ru.practicum.android.diploma.util.BindingFragment
 import ru.practicum.android.diploma.util.toIntOrNull
 
@@ -74,7 +72,7 @@ class FiltersFragment : BindingFragment<FragmentFilterBinding>() {
                 true -> findNavController().navigate(R.id.action_filters_fragment_to_location_fragment)
                 else -> {
                     viewModel.clearLocation()
-                    setViewState(tlPlaceWorkLayout, EMPTY_PARAM_VALUE)
+                    setViewState(tlPlaceWorkLayout, "")
                 }
             }
         }
@@ -89,7 +87,7 @@ class FiltersFragment : BindingFragment<FragmentFilterBinding>() {
                 true -> findNavController().navigate(R.id.action_filters_fragment_to_industryFragment)
                 else -> {
                     viewModel.clearIndustry()
-                    setViewState(tlBranchLayout, EMPTY_PARAM_VALUE)
+                    setViewState(tlBranchLayout, "")
                 }
             }
         }

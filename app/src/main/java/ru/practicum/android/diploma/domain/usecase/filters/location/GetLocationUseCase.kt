@@ -7,5 +7,4 @@ class GetLocationUseCase(
 ) {
 
     fun execute() = repository.getLocation()
-
 }

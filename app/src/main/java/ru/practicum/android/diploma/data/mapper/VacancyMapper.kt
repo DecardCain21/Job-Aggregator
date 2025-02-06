@@ -1,27 +1,31 @@
 package ru.practicum.android.diploma.data.mapper
 
-import ru.practicum.android.diploma.common.AppConstants.EMPTY_INT_PARAM_VALUE
 import ru.practicum.android.diploma.data.dto.VacanciesSearchResponse
 import ru.practicum.android.diploma.data.dto.vacancy.self.VacancyDto
 import ru.practicum.android.diploma.domain.models.Vacancy
 import ru.practicum.android.diploma.domain.models.VacancySearchResult
+import ru.practicum.android.diploma.util.SalaryFormatter
 
 class VacancyMapper {
 
-    fun map(response: VacanciesSearchResponse) = VacancySearchResult(
-        items = response.items.map { vacancy -> map(vacancy) },
-        pages = response.pages,
-        found = response.found,
-    )
+    fun map(response: Result<VacanciesSearchResponse>): Result<VacancySearchResult> {
+        return response.map { vacanciesResponse ->
+            VacancySearchResult(
+                items = vacanciesResponse.items.map { vacancy -> map(vacancy) },
+                pages = vacanciesResponse.pages,
+                totalVacancyCount = vacanciesResponse.found
+            )
+        }
+    }
 
     private fun map(dto: VacancyDto) = Vacancy(
         id = dto.id,
         imageUrl = dto.employer.logoUrls?.original,
         name = dto.name,
         city = dto.area?.name.orEmpty(),
-        salaryFrom = dto.salary?.from ?: EMPTY_INT_PARAM_VALUE,
-        salaryTo = dto.salary?.to ?: EMPTY_INT_PARAM_VALUE,
-        currency = dto.salary?.currency.orEmpty(),
+        salaryFrom = dto.salary?.from ?: 0,
+        salaryTo = dto.salary?.to ?: 0,
+        currency = SalaryFormatter.fromCurrencyName(dto.salary?.currency),
         employerName = dto.employer.name.orEmpty(),
         experience = dto.experience?.name.orEmpty(),
         employmentName = dto.employment?.name.orEmpty(),

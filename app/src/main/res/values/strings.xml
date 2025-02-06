@@ -53,4 +53,10 @@
     <string name="job_location_selection_title">Выбор места работы</string>
     <string name="country_selection_title">Выбор страны</string>
 
+    <plurals name="vacancies">
+        <item quantity="one">%d вакансия</item>
+        <item quantity="few">%d вакансии</item>
+        <item quantity="many">%d вакансий</item>
+        <item quantity="other">%d вакансий</item>
+    </plurals>
 </resources>

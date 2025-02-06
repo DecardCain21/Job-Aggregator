@@ -3,7 +3,7 @@ package ru.practicum.android.diploma.ui.search
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.practicum.android.diploma.R
-import ru.practicum.android.diploma.data.formatter.SalaryFormatter
+import ru.practicum.android.diploma.util.SalaryFormatter
 import ru.practicum.android.diploma.databinding.VacancyItemBinding
 import ru.practicum.android.diploma.domain.models.Vacancy
 

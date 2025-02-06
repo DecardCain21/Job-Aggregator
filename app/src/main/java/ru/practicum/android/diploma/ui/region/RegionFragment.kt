@@ -10,22 +10,19 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentRegionBinding
 import ru.practicum.android.diploma.domain.models.Region
-import ru.practicum.android.diploma.domain.state.RegionState
-import ru.practicum.android.diploma.domain.state.RegionState.Data.Data
-import ru.practicum.android.diploma.domain.state.RegionState.Data.Empty
-import ru.practicum.android.diploma.domain.state.RegionState.Data.Error
-import ru.practicum.android.diploma.domain.state.RegionState.Data.Loading
-import ru.practicum.android.diploma.domain.state.RegionState.Data.NoInternet
+import ru.practicum.android.diploma.ui.region.RegionState.Data.Data
+import ru.practicum.android.diploma.ui.region.RegionState.Data.Empty
+import ru.practicum.android.diploma.ui.region.RegionState.Data.Error
+import ru.practicum.android.diploma.ui.region.RegionState.Data.Loading
+import ru.practicum.android.diploma.ui.region.RegionState.Data.NoInternet
 import ru.practicum.android.diploma.ui.adapters.FilterAdapter
 import ru.practicum.android.diploma.ui.adapters.FilterAdapter.SaveFilterListener
 import ru.practicum.android.diploma.ui.adapters.ItemFilter
 import ru.practicum.android.diploma.util.BindingFragment
-import ru.practicum.android.diploma.util.ImageAndTextHelper
 import ru.practicum.android.diploma.util.invisible
 import ru.practicum.android.diploma.util.visible
 
@@ -33,7 +30,6 @@ class RegionFragment : BindingFragment<FragmentRegionBinding>() {
 
     private val filterAdapter = FilterAdapter()
     private val viewModel: RegionViewModel by viewModel()
-    private val imageAndTextHelper: ImageAndTextHelper by inject()
 
     override fun createBinding(
         inflater: LayoutInflater,
@@ -105,13 +101,8 @@ class RegionFragment : BindingFragment<FragmentRegionBinding>() {
             rvRegions.invisible()
             pbSearch.invisible()
             placeholder.layoutPlaceholder.visible()
-            imageAndTextHelper.setImageAndText(
-                requireContext(),
-                placeholder.ivPlaceholder,
-                placeholder.tvPlaceholder,
-                R.drawable.placeholder_vacancy_search_no_internet_skull,
-                resources.getString(R.string.no_internet)
-            )
+            placeholder.ivPlaceholder.setImageResource(R.drawable.placeholder_vacancy_search_no_internet_skull)
+            placeholder.tvPlaceholder.text = resources.getString(R.string.no_internet)
         }
     }
 
@@ -120,13 +111,8 @@ class RegionFragment : BindingFragment<FragmentRegionBinding>() {
             rvRegions.invisible()
             pbSearch.invisible()
             placeholder.layoutPlaceholder.visible()
-            imageAndTextHelper.setImageAndText(
-                requireContext(),
-                placeholder.ivPlaceholder,
-                placeholder.tvPlaceholder,
-                R.drawable.placeholder_no_vacancy_list_or_region_plate_cat,
-                resources.getString(R.string.no_such_region)
-            )
+            placeholder.ivPlaceholder.setImageResource(R.drawable.placeholder_no_vacancy_list_or_region_plate_cat)
+            placeholder.tvPlaceholder.text = resources.getString(R.string.no_such_region)
         }
     }
 
@@ -135,20 +121,15 @@ class RegionFragment : BindingFragment<FragmentRegionBinding>() {
             rvRegions.invisible()
             pbSearch.invisible()
             placeholder.layoutPlaceholder.visible()
-            imageAndTextHelper.setImageAndText(
-                requireContext(),
-                placeholder.ivPlaceholder,
-                placeholder.tvPlaceholder,
-                R.drawable.placeholder_no_region_list_carpet,
-                resources.getString(R.string.no_region_list)
-            )
+            placeholder.ivPlaceholder.setImageResource(R.drawable.placeholder_no_region_list_carpet)
+            placeholder.tvPlaceholder.text = resources.getString(R.string.no_region_list)
             showToast(R.string.toast_error_has_occurred)
         }
     }
 
     private fun showContent(regionList: List<Region>) {
         with(binding) {
-            filterAdapter.updateRegions(regionList)
+            filterAdapter.setCourses(filterAdapter.convertToItemFilter(regionList, ItemFilter.TYPE_REGION))
             rvRegions.visible()
             pbSearch.invisible()
             placeholder.layoutPlaceholder.invisible()

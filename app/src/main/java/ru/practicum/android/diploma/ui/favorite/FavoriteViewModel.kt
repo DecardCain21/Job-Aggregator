@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.domain.state.FavoriteVacanciesState
 import ru.practicum.android.diploma.domain.usecase.favorite.GetAllFavoriteVacanciesUseCase
 
 class FavoriteViewModel(

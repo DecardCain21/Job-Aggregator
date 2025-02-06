@@ -6,16 +6,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.common.AppConstants.SEARCH_DEBOUNCE_DELAY
-import ru.practicum.android.diploma.data.network.RetrofitNetworkClient.Companion.FAILED_INTERNET_CONNECTION_CODE
+import ru.practicum.android.diploma.data.network.NetworkError
 import ru.practicum.android.diploma.domain.models.Industry
-import ru.practicum.android.diploma.domain.state.IndustryState
-import ru.practicum.android.diploma.domain.state.IndustryState.Industries
-import ru.practicum.android.diploma.domain.state.IndustryState.Industries.Data
-import ru.practicum.android.diploma.domain.state.IndustryState.Industries.Error
-import ru.practicum.android.diploma.domain.state.IndustryState.Industries.Loading
-import ru.practicum.android.diploma.domain.state.IndustryState.Industries.NoInternet
-import ru.practicum.android.diploma.domain.state.IndustryState.Input.Empty
+import ru.practicum.android.diploma.domain.models.toIndustryItem
+import ru.practicum.android.diploma.ui.industry.IndustryState.Industries
+import ru.practicum.android.diploma.ui.industry.IndustryState.Industries.Data
+import ru.practicum.android.diploma.ui.industry.IndustryState.Industries.Error
+import ru.practicum.android.diploma.ui.industry.IndustryState.Industries.Loading
+import ru.practicum.android.diploma.ui.industry.IndustryState.Industries.NoInternet
+import ru.practicum.android.diploma.ui.industry.IndustryState.Input.Empty
 import ru.practicum.android.diploma.domain.usecase.GetIndustriesUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.tmp.GetTmpFiltersUseCase
 import ru.practicum.android.diploma.domain.usecase.filters.tmp.SetTmpFiltersUseCase
@@ -27,49 +26,49 @@ class IndustryViewModel(
     private val setTmpFiltersUseCase: SetTmpFiltersUseCase
 ) : ViewModel() {
 
+    private var listIndustry: List<Industry> = emptyList()
+    private var lastCheckedIndustry: Industry? = null
+
     private val _state: MutableStateFlow<IndustryState> =
         MutableStateFlow(IndustryState(Empty, Loading))
     val state: StateFlow<IndustryState>
         get() = _state
 
     val searchDebounce: (String) -> Unit = debounce(
-        delayMillis = SEARCH_DEBOUNCE_DELAY,
+        delayMillis = 2_000L,
         coroutineScope = viewModelScope,
         useLastParam = true
     ) { changedText -> getIndustries(changedText) }
 
     fun getIndustries(sortExpression: String = "") = viewModelScope.launch(Dispatchers.Main) {
-        val filters = getTmpFiltersUseCase.execute()
-        val response = getIndustriesUseCase.execute()
-        val dataState = when {
-            response.first?.isEmpty() == true -> Industries.Empty
-            response.second?.isNotEmpty() == true -> {
-                if (response.second == FAILED_INTERNET_CONNECTION_CODE.toString()) {
-                    NoInternet
-                } else {
-                    Error
-                }
-            }
-
+        lastCheckedIndustry = getTmpFiltersUseCase.execute().industry
+        val result = getIndustriesUseCase.execute()
+        val dataState = when (result.exceptionOrNull()) {
+            is NetworkError.BadCode, is NetworkError.ServerError -> Error
+            is NetworkError.NoData -> Industries.Empty
+            is NetworkError.NoInternet -> NoInternet
             else -> {
-                val sortIndustry = searchFilter(response.first!!, sortExpression)
+                listIndustry = result.getOrDefault(emptyList())
+                val sortIndustry = searchFilter(listIndustry, sortExpression, lastCheckedIndustry)
                 if (sortIndustry.isEmpty()) Industries.Empty else Data(sortIndustry)
             }
         }
-
-        _state.value = state.value.copy(data = dataState, selectedIndustry = filters.industry)
+        _state.value = state.value.copy(data = dataState)
     }
 
     fun setFilters(industry: Industry?) {
         val filters = getTmpFiltersUseCase.execute()
             .copy(industry = industry)
         setTmpFiltersUseCase.execute(filters)
-
-        _state.value = state.value.copy(selectedIndustry = industry)
+        lastCheckedIndustry = industry
+        val test = Data(listIndustry.toIndustryItem(industry))
+        _state.value = state.value.copy(data = test)
     }
 
-    private fun searchFilter(regions: List<Industry>, sortExpression: String) =
-        regions.filter { it.name.lowercase().contains(sortExpression.lowercase()) }
+    private fun searchFilter(regions: List<Industry>, sortExpression: String, selectIndustry: Industry?) =
+        regions
+            .filter { it.name.lowercase().contains(sortExpression.lowercase()) }
+            .toIndustryItem(selectIndustry)
 
     fun clearSearch() {
         getIndustries()
