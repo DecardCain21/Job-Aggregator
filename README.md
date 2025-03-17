@@ -2,7 +2,7 @@
 
 **Job Aggregator** — это Android-приложение для поиска вакансий. Оно позволяет пользователям находить работу, используя API HeadHunter, а также сохранять понравившиеся вакансии в локальной базе данных. Проект написан на Kotlin с использованием архитектурного подхода MVVM+.
 
-<img src="images/home.png" alt="home" width="23%"/> <img src="images/filters.png" alt="filters" width="23%"/> <img src="images/search.png" alt="search" width="23%"/> <img src="images/details.png" alt="details" width="23%"/>
+<img src="images2/home.png" alt="home" width="23%"/> <img src="images2/filters.png" alt="filters" width="23%"/> <img src="images2/search.png" alt="search" width="23%"/> <img src="images2/details.png" alt="details" width="23%"/>
 
 ## Функциональность
 - 🔎 **Поиск вакансий** —  находите актуальные вакансии по ключевым словам и фильтрам.
